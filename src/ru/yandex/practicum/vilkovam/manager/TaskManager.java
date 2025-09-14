@@ -6,7 +6,6 @@ import ru.yandex.practicum.vilkovam.model.Task;
 import ru.yandex.practicum.vilkovam.model.TaskStatus;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,7 +115,9 @@ public class TaskManager {
      * @return collections from all of {@link Task}
      */
     public Collection<Task> getAllTask() {
-        return Collections.unmodifiableCollection(idToTask.values());
+        return idToTask.values().stream()
+                .map(Task::new)
+                .toList();
     }
 
     /**
@@ -125,7 +126,9 @@ public class TaskManager {
      * @return collections from all of {@link Epic}
      */
     public Collection<Epic> getAllEpic() {
-        return Collections.unmodifiableCollection(idToEpic.values());
+        return idToEpic.values().stream()
+                .map(Epic::new)
+                .toList();
     }
 
     /**
@@ -134,7 +137,9 @@ public class TaskManager {
      * @return collections from all of {@link Subtask}
      */
     public Collection<Subtask> getAllSubtask() {
-        return Collections.unmodifiableCollection(idToSubtask.values());
+        return idToSubtask.values().stream()
+                .map(Subtask::new)
+                .toList();
     }
 
     /**
@@ -155,8 +160,7 @@ public class TaskManager {
      * @return list of all objects(Task/Epic/Subtask)
      */
     public List<Task> getAllTasks() {
-        return Stream.of(idToTask, idToEpic, idToSubtask)
-                .map(Map::values)
+        return Stream.of(getAllTask(), getAllEpic(), getAllSubtask())
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
