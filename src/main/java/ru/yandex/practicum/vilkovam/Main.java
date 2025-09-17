@@ -1,12 +1,11 @@
 package ru.yandex.practicum.vilkovam;
 
-import ru.yandex.practicum.vilkovam.manager.IdGenerator;
-import ru.yandex.practicum.vilkovam.manager.IdGeneratorImpl;
 import ru.yandex.practicum.vilkovam.manager.TaskManager;
 import ru.yandex.practicum.vilkovam.model.Epic;
 import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;
 import ru.yandex.practicum.vilkovam.model.TaskStatus;
+import ru.yandex.practicum.vilkovam.util.Managers;
 
 /**
  * @author Andrew Vilkov
@@ -15,8 +14,7 @@ import ru.yandex.practicum.vilkovam.model.TaskStatus;
  */
 public class Main {
     public static void main(String[] args) {
-        IdGenerator idGenerator = new IdGeneratorImpl();
-        TaskManager manager = new TaskManager(idGenerator);
+        TaskManager manager = Managers.getDefault();
         Task firstTask = new Task("Task 1", "Description 1");
         Task secondTask = new Task("Task 2", "Description 2");
 
@@ -65,11 +63,24 @@ public class Main {
         System.out.println();
         manager.getAllTasks().forEach(System.out::println);
 
+        manager.getTaskById(2);
+        manager.getSubtaskById(7);
+        manager.getTaskById(2);
+        manager.getTaskById(2);
+        manager.getEpicById(4);
+
+
         thirdSubtask.setStatus(TaskStatus.DONE);
         manager.updateSubtask(thirdSubtask);
         System.out.println();
         System.out.println("#".repeat(10));
         System.out.println();
         manager.getAllTasks().forEach(System.out::println);
+
+        System.out.println();
+        System.out.print("#".repeat(10));
+        System.out.print(" HISTORY ");
+        System.out.println("#".repeat(10));
+        manager.getHistory().forEach(System.out::println);
     }
 }

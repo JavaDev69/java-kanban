@@ -17,17 +17,20 @@ import java.util.stream.Stream;
  * @created 28.08.2025 - 13:37
  * @project java-kanban
  */
-public class TaskManager {
+public class InMemoryTaskManager implements TaskManager {
     private final IdGenerator idGenerator;
 
     private final Map<Integer, Task> idToTask = new HashMap<>();
     private final Map<Integer, Epic> idToEpic = new HashMap<>();
     private final Map<Integer, Subtask> idToSubtask = new HashMap<>();
+    private final HistoryManager historyManager;
 
-    public TaskManager(IdGenerator idGenerator) {
+    public InMemoryTaskManager(IdGenerator idGenerator, HistoryManager historyManager) {
         this.idGenerator = idGenerator;
+        this.historyManager = historyManager;
     }
 
+    @Override
     public Task createTask(Task task) {
         if (task == null) {
             return null;
@@ -38,18 +41,23 @@ public class TaskManager {
         return task;
     }
 
+    @Override
     public Task getTaskById(Integer id) {
+        historyManager.add(new Task(idToTask.get(id)));
         return new Task(idToTask.get(id));
     }
 
+    @Override
     public void updateTask(Task task) {
         idToTask.replace(task.getId(), new Task(task));
     }
 
+    @Override
     public void removeTaskById(Integer id) {
         idToTask.remove(id);
     }
 
+    @Override
     public Epic createEpic(Epic epic) {
         if (epic == null) {
             return null;
@@ -60,53 +68,67 @@ public class TaskManager {
         return epic;
     }
 
+    @Override
     public Epic getEpicById(Integer id) {
+        historyManager.add(new Epic(idToEpic.get(id)));
         return new Epic(idToEpic.get(id));
     }
 
+    @Override
     public void updateEpic(Epic epic) {
         Epic epicToAdd = new Epic(epic);
         idToEpic.replace(epicToAdd.getId(), epicToAdd);
         updateEpicStatus(epicToAdd);
     }
 
+    @Override
     public void removeEpicById(Integer id) {
-        Epic epic = getEpicById(id);
+        Epic epic = idToEpic.get(id);
         List<Integer> subtaskIds = epic.getSubtaskIds();
-        subtaskIds.forEach(this::removeSubtaskById);
+        subtaskIds.forEach(idToSubtask::remove);
         idToEpic.remove(id);
     }
 
+    @Override
     public Subtask createSubtask(Subtask subtask) {
         if (subtask == null || subtask.getEpicId() == null) {
             return null;
         }
 
         setIdAndStatus(subtask);
-        Epic epicById = getEpicById(subtask.getEpicId());
-        epicById.getSubtaskIds().add(subtask.getId());
-        updateEpic(epicById);
+        Epic epicById = idToEpic.get(subtask.getEpicId());
+        List<Integer> subtaskIds = epicById.getSubtaskIds();
+        subtaskIds.add(subtask.getId());
 
         idToSubtask.put(subtask.getId(), new Subtask(subtask));
         return subtask;
     }
 
+    @Override
     public Subtask getSubtaskById(Integer id) {
+        historyManager.add(new Subtask(idToSubtask.get(id)));
         return new Subtask(idToSubtask.get(id));
     }
 
+    @Override
     public void updateSubtask(Subtask subtask) {
-        Epic epic = getEpicById(subtask.getEpicId());
+        Epic epic = idToEpic.get(subtask.getEpicId());
         idToSubtask.replace(subtask.getId(), new Subtask(subtask));
         updateEpicStatus(epic);
     }
 
+    @Override
     public void removeSubtaskById(Integer id) {
         Subtask subtask = getSubtaskById(id);
-        Epic epic = getEpicById(subtask.getEpicId());
+        Epic epic = idToEpic.get((subtask.getEpicId()));
         epic.getSubtaskIds().remove(id);
-        updateEpic(epic);
         idToSubtask.remove(id);
+        updateEpicStatus(epic);
+    }
+
+    @Override
+    public List<Task> getHistory() {
+        return historyManager.getHistory();
     }
 
     /**
@@ -114,6 +136,7 @@ public class TaskManager {
      *
      * @return collections from all of {@link Task}
      */
+    @Override
     public Collection<Task> getAllTask() {
         return idToTask.values().stream()
                 .map(Task::new)
@@ -125,6 +148,7 @@ public class TaskManager {
      *
      * @return collections from all of {@link Epic}
      */
+    @Override
     public Collection<Epic> getAllEpic() {
         return idToEpic.values().stream()
                 .map(Epic::new)
@@ -136,6 +160,7 @@ public class TaskManager {
      *
      * @return collections from all of {@link Subtask}
      */
+    @Override
     public Collection<Subtask> getAllSubtask() {
         return idToSubtask.values().stream()
                 .map(Subtask::new)
@@ -148,6 +173,7 @@ public class TaskManager {
      * @param epicId id target epic
      * @return collections from all of {@link Subtask}
      */
+    @Override
     public Collection<Subtask> getAllSubtaskByEpicId(Integer epicId) {
         return idToSubtask.values().stream()
                 .filter(e -> epicId.equals(e.getEpicId()))
@@ -159,6 +185,7 @@ public class TaskManager {
      *
      * @return list of all objects(Task/Epic/Subtask)
      */
+    @Override
     public List<Task> getAllTasks() {
         return Stream.of(getAllTask(), getAllEpic(), getAllSubtask())
                 .flatMap(Collection::stream)
