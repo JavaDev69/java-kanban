@@ -15,7 +15,12 @@ import java.util.List;
  * @project java-kanban
  */
 public class InMemoryHistoryManager implements HistoryManager {
+    public final int maxHistorySize;
     private final LinkedList<Task> history = new LinkedList<>();
+
+    public InMemoryHistoryManager(int maxHistorySize) {
+        this.maxHistorySize = maxHistorySize;
+    }
 
     @Override
     public List<Task> getHistory() {
@@ -38,7 +43,7 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     private void addWithCheckSize(Task task) {
-        if (history.size() > 9) {
+        if (history.size() > (maxHistorySize - 1)) {
             history.removeLast();
         }
         history.addFirst(task);

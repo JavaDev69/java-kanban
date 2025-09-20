@@ -4,7 +4,6 @@ import ru.yandex.practicum.vilkovam.model.Epic;
 import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -37,13 +36,13 @@ public interface TaskManager {
 
     void removeSubtaskById(Integer id);
 
-    Collection<Task> getAllTask();
+    List<Task> getAllTask();
 
-    Collection<Epic> getAllEpic();
+    List<Epic> getAllEpic();
 
-    Collection<Subtask> getAllSubtask();
+    List<Subtask> getAllSubtask();
 
-    Collection<Subtask> getAllSubtaskByEpicId(Integer epicId);
+    List<Subtask> getAllSubtaskByEpicId(Integer epicId);
 
     List<Task> getUnifiedTaskList();
 

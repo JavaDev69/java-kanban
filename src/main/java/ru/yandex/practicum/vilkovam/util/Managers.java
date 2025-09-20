@@ -13,13 +13,17 @@ import ru.yandex.practicum.vilkovam.manager.TaskManager;
  * @project java-kanban
  */
 public class Managers {
+    public static final int MAX_HISTORY_SIZE = 10;
+
+    private Managers() {
+    }
 
     public static TaskManager getDefault() {
         return new InMemoryTaskManager(getDefaultIdGenerator(), getDefaultHistory());
     }
 
     public static HistoryManager getDefaultHistory() {
-        return new InMemoryHistoryManager();
+        return new InMemoryHistoryManager(MAX_HISTORY_SIZE);
     }
 
     public static IdGenerator getDefaultIdGenerator() {

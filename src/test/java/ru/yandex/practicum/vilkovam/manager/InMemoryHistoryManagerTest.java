@@ -5,7 +5,10 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.vilkovam.model.Epic;
 import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;
+import ru.yandex.practicum.vilkovam.model.TaskStatus;
+import ru.yandex.practicum.vilkovam.util.Managers;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -21,11 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @project java-kanban
  */
 class InMemoryHistoryManagerTest {
+    public static final int MAX_HISTORY_SIZE = 10;
     HistoryManager historyManager;
 
     @BeforeEach
     void setUp() {
-        historyManager = new InMemoryHistoryManager();
+        historyManager = new InMemoryHistoryManager(MAX_HISTORY_SIZE);
     }
 
     @Test
@@ -63,7 +67,7 @@ class InMemoryHistoryManagerTest {
         tasks.forEach(historyManager::add);
         List<Task> actualHistory = historyManager.getHistory();
 
-        assertEquals(10, actualHistory.size(), "Количество задач в истории не совпадают.");
+        assertEquals(MAX_HISTORY_SIZE, actualHistory.size(), "Количество задач в истории не совпадают.");
         assertEquals(tasks.get(10), actualHistory.getFirst(), "Первый в списке - последний добавленный");
         assertEquals(tasks.get(1), actualHistory.getLast(), "Последний в списке - второй добавленный");
         assertFalse(actualHistory.contains(tasks.get(0)), "Первый добавленный отсутствует в списке");
@@ -76,5 +80,29 @@ class InMemoryHistoryManagerTest {
         Task first = historyManager.getHistory().getFirst();
 
         assertThrows(UnsupportedOperationException.class, () -> first.setId(2), "Задачу нельзя изменить");
+    }
+
+    @Test
+    void shouldSavePreviousVersionTaskInHistory() {
+        TaskManager taskManager = Managers.getDefault();
+        Task createdTask = taskManager.createTask(new Task("Task", "Desk"));
+
+        List<Task> history = taskManager.getHistory();
+        assertNotNull(history, "TaskManager должен возвращать не null при вызове getHistory");
+        assertEquals(0, history.size(), "История должна быть пуста");
+
+        taskManager.getTaskById(createdTask.getId());
+        history = taskManager.getHistory();
+        assertEquals(1, history.size(), "История не должна быть пуста");
+        assertIterableEquals(Collections.singletonList(createdTask), history, "История не совпадает");
+
+        Task changedTask = new Task(createdTask);
+        changedTask.setStatus(TaskStatus.DONE);
+        taskManager.updateTask(changedTask);
+        taskManager.getTaskById(createdTask.getId());
+        history = taskManager.getHistory();
+
+        assertEquals(2, history.size(), "История не должна быть пуста");
+        assertIterableEquals(List.of(changedTask, createdTask), history, "История не совпадает");
     }
 }
