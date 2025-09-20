@@ -38,7 +38,7 @@ public class Main {
         manager.createSubtask(secondSubtask);
         manager.createSubtask(thirdSubtask);
 
-        manager.getAllTasks().forEach(System.out::println);
+        manager.getUnifiedTaskList().forEach(System.out::println);
         System.out.println();
         System.out.println("#".repeat(10));
         System.out.println();
@@ -46,7 +46,7 @@ public class Main {
 
         secondSubtask.setStatus(TaskStatus.IN_PROGRESS);
         manager.updateSubtask(secondSubtask);
-        manager.getAllTasks().forEach(System.out::println);
+        manager.getUnifiedTaskList().forEach(System.out::println);
 
         firstTask.setStatus(TaskStatus.DONE);
         secondSubtask.setStatus(TaskStatus.DONE);
@@ -54,14 +54,14 @@ public class Main {
         System.out.println();
         System.out.println("#".repeat(10));
         System.out.println();
-        manager.getAllTasks().forEach(System.out::println);
+        manager.getUnifiedTaskList().forEach(System.out::println);
 
         manager.removeEpicById(firstEpic.getId());
 
         System.out.println();
         System.out.println("#".repeat(10));
         System.out.println();
-        manager.getAllTasks().forEach(System.out::println);
+        manager.getUnifiedTaskList().forEach(System.out::println);
 
         manager.getTaskById(2);
         manager.getSubtaskById(7);
@@ -75,7 +75,7 @@ public class Main {
         System.out.println();
         System.out.println("#".repeat(10));
         System.out.println();
-        manager.getAllTasks().forEach(System.out::println);
+        manager.getUnifiedTaskList().forEach(System.out::println);
 
         System.out.println();
         System.out.print("#".repeat(10));

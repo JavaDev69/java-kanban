@@ -9,16 +9,19 @@ import java.util.List;
  * @project java-kanban
  */
 public class Epic extends Task {
-    private final List<Integer> subtaskIds;
+    private final List<Integer> subtaskIds = new ArrayList<>();
 
     public Epic(String name, String description) {
         super(name, description);
-        this.subtaskIds = new ArrayList<>();
+    }
+
+    public Epic(int id, String name, String description) {
+        super(id, name, description);
     }
 
     public Epic(Epic epic) {
         super(epic);
-        this.subtaskIds = new ArrayList<>(epic.subtaskIds);
+        this.subtaskIds.addAll(epic.subtaskIds);
     }
 
     public List<Integer> getSubtaskIds() {

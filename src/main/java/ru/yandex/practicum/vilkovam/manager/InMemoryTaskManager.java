@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,6 +19,9 @@ import java.util.stream.Stream;
  * @project java-kanban
  */
 public class InMemoryTaskManager implements TaskManager {
+    private static final UnaryOperator<Task> taskMapper = Task::new;
+    private static final UnaryOperator<Subtask> subtaskMapper = Subtask::new;
+    private static final UnaryOperator<Epic> epicMapper = Epic::new;
     private final IdGenerator idGenerator;
 
     private final Map<Integer, Task> idToTask = new HashMap<>();
@@ -32,19 +36,14 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task createTask(Task task) {
-        if (task == null) {
-            return null;
-        }
-
-        setIdAndStatus(task);
-        idToTask.put(task.getId(), new Task(task));
-        return task;
+        return putToList(task, taskMapper, idToTask);
     }
 
     @Override
     public Task getTaskById(Integer id) {
-        historyManager.add(new Task(idToTask.get(id)));
-        return new Task(idToTask.get(id));
+        Task task = idToTask.get(id);
+        historyManager.add(task);
+        return new Task(task);
     }
 
     @Override
@@ -59,19 +58,14 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Epic createEpic(Epic epic) {
-        if (epic == null) {
-            return null;
-        }
-
-        setIdAndStatus(epic);
-        idToEpic.put(epic.getId(), new Epic(epic));
-        return epic;
+        return putToList(epic, epicMapper, idToEpic);
     }
 
     @Override
     public Epic getEpicById(Integer id) {
-        historyManager.add(new Epic(idToEpic.get(id)));
-        return new Epic(idToEpic.get(id));
+        Epic epic = idToEpic.get(id);
+        historyManager.add(epic);
+        return new Epic(epic);
     }
 
     @Override
@@ -91,23 +85,21 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Subtask createSubtask(Subtask subtask) {
-        if (subtask == null || subtask.getEpicId() == null) {
+        if (subtask == null || subtask.getEpicId() == null || !idToEpic.containsKey(subtask.getEpicId())) {
             return null;
         }
-
-        setIdAndStatus(subtask);
-        Epic epicById = idToEpic.get(subtask.getEpicId());
+        Subtask savedSubtask = putToList(subtask, subtaskMapper, idToSubtask);
+        Epic epicById = idToEpic.get(savedSubtask.getEpicId());
         List<Integer> subtaskIds = epicById.getSubtaskIds();
-        subtaskIds.add(subtask.getId());
-
-        idToSubtask.put(subtask.getId(), new Subtask(subtask));
-        return subtask;
+        subtaskIds.add(savedSubtask.getId());
+        return savedSubtask;
     }
 
     @Override
     public Subtask getSubtaskById(Integer id) {
-        historyManager.add(new Subtask(idToSubtask.get(id)));
-        return new Subtask(idToSubtask.get(id));
+        Subtask subtask = idToSubtask.get(id);
+        historyManager.add(subtask);
+        return new Subtask(subtask);
     }
 
     @Override
@@ -186,7 +178,7 @@ public class InMemoryTaskManager implements TaskManager {
      * @return list of all objects(Task/Epic/Subtask)
      */
     @Override
-    public List<Task> getAllTasks() {
+    public List<Task> getUnifiedTaskList() {
         return Stream.of(getAllTask(), getAllEpic(), getAllSubtask())
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
@@ -234,5 +226,15 @@ public class InMemoryTaskManager implements TaskManager {
                 .filter(e -> subtaskIds.contains(e.getKey()))
                 .map(Map.Entry::getValue)
                 .allMatch(e -> status.equals(e.getStatus()));
+    }
+
+    private <T extends Task> T putToList(T originTask, UnaryOperator<T> mapper, Map<Integer, T> map) {
+        if (originTask == null) {
+            return null;
+        }
+
+        setIdAndStatus(originTask);
+        map.put(originTask.getId(), mapper.apply(originTask));
+        return originTask;
     }
 }

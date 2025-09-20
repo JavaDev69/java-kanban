@@ -1,9 +1,12 @@
 package ru.yandex.practicum.vilkovam.manager;
 
+import ru.yandex.practicum.vilkovam.model.Epic;
+import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;
+import ru.yandex.practicum.vilkovam.model.TaskHolder;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -12,7 +15,7 @@ import java.util.List;
  * @project java-kanban
  */
 public class InMemoryHistoryManager implements HistoryManager {
-    private List<Task> history = new ArrayList<>();
+    private final LinkedList<Task> history = new LinkedList<>();
 
     @Override
     public List<Task> getHistory() {
@@ -21,9 +24,23 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void add(Task task) {
+        addWithCheckSize(new TaskHolder(new Task(task)));
+    }
+
+    @Override
+    public void add(Subtask subtask) {
+        addWithCheckSize(new TaskHolder(new Subtask(subtask)));
+    }
+
+    @Override
+    public void add(Epic epic) {
+        addWithCheckSize(new TaskHolder(new Epic(epic)));
+    }
+
+    private void addWithCheckSize(Task task) {
         if (history.size() > 9) {
-            history.removeFirst();
+            history.removeLast();
         }
-        history.add(task);
+        history.addFirst(task);
     }
 }

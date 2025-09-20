@@ -13,9 +13,17 @@ public class Task {
     private String description;
     private TaskStatus status;
 
+    public Task() {
+    }
+
     public Task(String name, String description) {
         this.name = name;
         this.description = description;
+    }
+
+    public Task(int id, String name, String description) {
+        this(name, description);
+        this.id = id;
     }
 
     public Task(Task task) {
@@ -59,9 +67,8 @@ public class Task {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Task task = (Task) o;
-        return Objects.equals(id, task.id);
+        if (!(o instanceof Task task)) return false;
+        return Objects.equals(id, task.getId());
     }
 
     @Override
