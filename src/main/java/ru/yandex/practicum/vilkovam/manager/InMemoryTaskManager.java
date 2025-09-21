@@ -6,10 +6,7 @@ import ru.yandex.practicum.vilkovam.model.Task;
 import ru.yandex.practicum.vilkovam.model.TaskStatus;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,119 +16,127 @@ import java.util.stream.Stream;
  * @project java-kanban
  */
 public class InMemoryTaskManager implements TaskManager {
-    private static final UnaryOperator<Task> taskMapper = Task::new;
-    private static final UnaryOperator<Subtask> subtaskMapper = Subtask::new;
-    private static final UnaryOperator<Epic> epicMapper = Epic::new;
-    private final IdGenerator idGenerator;
-
-    private final Map<Integer, Task> idToTask = new HashMap<>();
-    private final Map<Integer, Epic> idToEpic = new HashMap<>();
-    private final Map<Integer, Subtask> idToSubtask = new HashMap<>();
+    private final TaskController<Task> taskController;
+    private final TaskController<Epic> epicController;
+    private final TaskController<Subtask> subTaskController;
     private final HistoryManager historyManager;
 
     public InMemoryTaskManager(IdGenerator idGenerator, HistoryManager historyManager) {
-        this.idGenerator = idGenerator;
         this.historyManager = historyManager;
+        taskController = new TaskController<>(idGenerator, Task::new);
+        epicController = new EpicController(idGenerator, Epic::new);
+        subTaskController = new TaskController<>(idGenerator, Subtask::new);
     }
 
     @Override
     public Task createTask(Task task) {
-        if (task == null) {
-            return null;
-        }
-        return putToList(task, taskMapper, idToTask);
+        return taskController.create(task);
     }
 
     @Override
     public Task getTaskById(Integer id) {
-        if (!idToTask.containsKey(id)) return null;
-        Task task = idToTask.get(id);
-        historyManager.add(task);
-        return new Task(task);
+        Task taskById = taskController.getById(id);
+        historyManager.add(taskById);
+        return taskById;
     }
 
     @Override
     public void updateTask(Task task) {
-        if (task == null || task.getId() == null || !idToTask.containsKey(task.getId())) return;
-        idToTask.replace(task.getId(), new Task(task));
+        taskController.update(task);
     }
 
     @Override
     public void removeTaskById(Integer id) {
-        if (id == null || !idToTask.containsKey(id)) return;
-        idToTask.remove(id);
+        taskController.removeById(id);
     }
 
     @Override
     public Epic createEpic(Epic epic) {
-        if (epic == null || !epic.getSubtaskIds().stream().allMatch(idToSubtask::containsKey)) {
-            return null;
-        }
-        return putToList(epic, epicMapper, idToEpic);
+        return epicController.create(epic);
     }
 
     @Override
     public Epic getEpicById(Integer id) {
-        if (!idToEpic.containsKey(id)) return null;
-        Epic epic = idToEpic.get(id);
-        historyManager.add(epic);
-        return new Epic(epic);
+        Epic epicById = epicController.getById(id);
+        historyManager.add(epicById);
+        return epicById;
     }
 
     @Override
     public void updateEpic(Epic epic) {
-        if (epic == null || epic.getId() == null || !idToEpic.containsKey(epic.getId()) ||
-                !epic.getSubtaskIds().stream().allMatch(idToSubtask::containsKey)) return;
-        Epic epicToAdd = new Epic(epic);
-        idToEpic.replace(epicToAdd.getId(), epicToAdd);
-        updateEpicStatus(epicToAdd);
+        List<Integer> newSubtaskIds = epic.getSubtaskIds();
+
+        boolean isAllSubtaskBelongToEpic = newSubtaskIds.stream()
+                .map(subTaskController::getById)
+                .map(Subtask::getEpicId)
+                .allMatch(epic.getId()::equals);
+
+        if (isAllSubtaskBelongToEpic) {
+            epicController.update(epic);
+            updateEpicStatus(epic);
+        }
     }
 
     @Override
     public void removeEpicById(Integer id) {
-        if (id == null || !idToEpic.containsKey(id)) return;
-        Epic epic = idToEpic.get(id);
+        Epic epic = epicController.getById(id);
         List<Integer> subtaskIds = epic.getSubtaskIds();
-        subtaskIds.forEach(idToSubtask::remove);
-        idToEpic.remove(id);
+        subtaskIds.forEach(subTaskController::removeById);
+        epicController.removeById(id);
     }
 
     @Override
     public Subtask createSubtask(Subtask subtask) {
-        if (subtask == null || subtask.getEpicId() == null || !idToEpic.containsKey(subtask.getEpicId())) {
+        if (subtask == null || subtask.getEpicId() == null || !epicController.existsById(subtask.getEpicId())) {
             return null;
         }
-        Subtask savedSubtask = putToList(subtask, subtaskMapper, idToSubtask);
-        Epic epicById = idToEpic.get(savedSubtask.getEpicId());
+
+        Subtask savedSubtask = subTaskController.create(subtask);
+        Epic epicById = epicController.getById(savedSubtask.getEpicId());
         List<Integer> subtaskIds = epicById.getSubtaskIds();
         subtaskIds.add(savedSubtask.getId());
+        epicController.update(epicById);
         return savedSubtask;
     }
 
     @Override
     public Subtask getSubtaskById(Integer id) {
-        if (!idToSubtask.containsKey(id)) return null;
-        Subtask subtask = idToSubtask.get(id);
+        Subtask subtask = subTaskController.getById(id);
         historyManager.add(subtask);
-        return new Subtask(subtask);
+        return subtask;
     }
 
     @Override
     public void updateSubtask(Subtask subtask) {
-        if (subtask == null || subtask.getId() == null || subtask.getEpicId() == null
-                || !idToSubtask.containsKey(subtask.getId()) || !idToEpic.containsKey(subtask.getEpicId())) return;
-        Epic epic = idToEpic.get(subtask.getEpicId());
-        idToSubtask.replace(subtask.getId(), new Subtask(subtask));
+        if (subtask == null || !subTaskController.existsById(subtask.getId())
+                || !epicController.existsById(subtask.getEpicId())) {
+            return;
+        }
+
+        Subtask savedSubtask = subTaskController.getById(subtask.getId());
+        Epic epic = epicController.getById(subtask.getEpicId());
+        subTaskController.update(subtask);
+
+        if (!subtask.getEpicId().equals(savedSubtask.getEpicId())) {
+            Epic oldEpicForSubtask = epicController.getById(savedSubtask.getEpicId());
+            oldEpicForSubtask.getSubtaskIds().remove(subtask.getId());
+            epic.getSubtaskIds().add(subtask.getId());
+            epicController.update(oldEpicForSubtask);
+            epicController.update(epic);
+            updateEpicStatus(oldEpicForSubtask);
+        }
+
         updateEpicStatus(epic);
     }
 
     @Override
     public void removeSubtaskById(Integer id) {
-        if (id == null || !idToSubtask.containsKey(id)) return;
-        Subtask subtask = idToSubtask.get(id);
-        Epic epic = idToEpic.get(subtask.getEpicId());
+        if (!subTaskController.existsById(id)) return;
+        Subtask subtask = subTaskController.getById(id);
+        Epic epic = epicController.getById(subtask.getEpicId());
         epic.getSubtaskIds().remove(id);
-        idToSubtask.remove(id);
+        epicController.update(epic);
+        subTaskController.removeById(id);
         updateEpicStatus(epic);
     }
 
@@ -147,9 +152,7 @@ public class InMemoryTaskManager implements TaskManager {
      */
     @Override
     public List<Task> getAllTask() {
-        return idToTask.values().stream()
-                .map(taskMapper)
-                .toList();
+        return taskController.getAllItem();
     }
 
     /**
@@ -159,9 +162,7 @@ public class InMemoryTaskManager implements TaskManager {
      */
     @Override
     public List<Epic> getAllEpic() {
-        return idToEpic.values().stream()
-                .map(epicMapper)
-                .toList();
+        return epicController.getAllItem();
     }
 
     /**
@@ -171,9 +172,7 @@ public class InMemoryTaskManager implements TaskManager {
      */
     @Override
     public List<Subtask> getAllSubtask() {
-        return idToSubtask.values().stream()
-                .map(subtaskMapper)
-                .toList();
+        return subTaskController.getAllItem();
     }
 
     /**
@@ -202,23 +201,13 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     /**
-     * Установка нового id и статуса {@link  TaskStatus#NEW} для переданного объекта {@link Task}/{@link Epic}/{@link Subtask}
-     *
-     * @param task - target object
-     */
-    private void setIdAndStatus(Task task) {
-        task.setId(idGenerator.nextId());
-        task.setStatus(TaskStatus.NEW);
-    }
-
-    /**
      * Вспомогательный метод для обновление статуса {@link Epic}
      *
      * @param epic target epic for calculate status
      */
     private void updateEpicStatus(Epic epic) {
-        if (epic == null || epic.getId() == null) return;
-        Epic targetEpic = idToEpic.get(epic.getId());
+        if (epic == null || epic.getId() == null || !epicController.existsById(epic.getId())) return;
+        Epic targetEpic = epicController.getById(epic.getId());
         List<Integer> subtaskIds = targetEpic.getSubtaskIds();
 
         if (subtaskIds.isEmpty() || isAllSubtaskHasStatus(targetEpic, TaskStatus.NEW)) {
@@ -228,6 +217,7 @@ public class InMemoryTaskManager implements TaskManager {
         } else {
             targetEpic.setStatus(TaskStatus.IN_PROGRESS);
         }
+        epicController.update(targetEpic);
     }
 
     /**
@@ -239,24 +229,9 @@ public class InMemoryTaskManager implements TaskManager {
      */
     private boolean isAllSubtaskHasStatus(Epic epic, TaskStatus status) {
         List<Integer> subtaskIds = epic.getSubtaskIds();
-        return idToSubtask.entrySet().stream()
-                .filter(e -> subtaskIds.contains(e.getKey()))
-                .map(Map.Entry::getValue)
+        return subTaskController.getAllItem().stream()
+                .filter(e -> subtaskIds.contains(e.getId()))
                 .allMatch(e -> status.equals(e.getStatus()));
     }
 
-    /**
-     * Вспомогательный метод для добавения объекта {@link Task} в соответствующую коллекцию
-     *
-     * @param originTask оригинальный объект
-     * @param mapper     вспомогательная функция для получения копии объекта
-     * @param map        целевая коллекция
-     * @param <T>        тип объекта
-     * @return оригинальный объект с установленным id и статусом
-     */
-    private <T extends Task> T putToList(T originTask, UnaryOperator<T> mapper, Map<Integer, T> map) {
-        setIdAndStatus(originTask);
-        map.put(originTask.getId(), mapper.apply(originTask));
-        return originTask;
-    }
 }

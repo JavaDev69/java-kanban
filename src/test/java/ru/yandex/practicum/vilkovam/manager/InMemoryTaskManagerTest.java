@@ -162,8 +162,9 @@ class InMemoryTaskManagerTest {
         Epic secondEpic = new Epic("Test createSubtask", "Test createSubtask description");
         secondEpic.getSubtaskIds().add(epic.getId());
 
-        Epic createdEpic = taskManager.createEpic(secondEpic);
-        assertNull(createdEpic, "Epic нельзя добавить в самого себя в виде подзадачи");
+        taskManager.createEpic(secondEpic);
+        Epic createdEpic = taskManager.getEpicById(secondEpic.getId());
+        assertEquals(0, createdEpic.getSubtaskIds().size(), "Epic нельзя добавить в самого себя в виде подзадачи");
     }
 
     @Test
