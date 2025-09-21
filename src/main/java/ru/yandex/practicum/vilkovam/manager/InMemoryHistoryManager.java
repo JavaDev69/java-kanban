@@ -29,23 +29,26 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void add(Task task) {
-        addWithCheckSize(new TaskHolder(new Task(task)));
+        if (task == null) return;
+        addWithCheckSize(new Task(task));
     }
 
     @Override
     public void add(Subtask subtask) {
-        addWithCheckSize(new TaskHolder(new Subtask(subtask)));
+        if (subtask == null) return;
+        addWithCheckSize(new Subtask(subtask));
     }
 
     @Override
     public void add(Epic epic) {
-        addWithCheckSize(new TaskHolder(new Epic(epic)));
+        if (epic == null) return;
+        addWithCheckSize(new Epic(epic));
     }
 
     private void addWithCheckSize(Task task) {
         if (history.size() > (maxHistorySize - 1)) {
             history.removeLast();
         }
-        history.addFirst(task);
+        history.addFirst(new TaskHolder(task));
     }
 }
