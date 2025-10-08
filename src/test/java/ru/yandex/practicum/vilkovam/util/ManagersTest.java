@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Andrew Vilkov
@@ -27,8 +27,7 @@ class ManagersTest {
     void getDefaultShouldReturnNonNullTaskManager() {
         TaskManager taskManager = Managers.getDefault();
         assertNotNull(taskManager, "getDefault() должен возвращать не null");
-        assertTrue(taskManager instanceof InMemoryTaskManager,
-                "getDefault() должен возвращать InMemoryTaskManager");
+        assertInstanceOf(InMemoryTaskManager.class, taskManager, "getDefault() должен возвращать InMemoryTaskManager");
     }
 
     @Test
@@ -51,11 +50,11 @@ class ManagersTest {
     void getDefaultHistoryShouldReturnNonNullHistoryManager() {
         HistoryManager historyManager = Managers.getDefaultHistory();
         assertNotNull(historyManager, "getDefaultHistory() должен возвращать не null");
-        assertTrue(historyManager instanceof InMemoryHistoryManager,
+        assertInstanceOf(InMemoryHistoryManager.class, historyManager,
                 "getDefaultHistory() должен возвращать InMemoryHistoryManager");
         assertNotNull(historyManager.getHistory(), "getHistory должен возвращать не null");
         assertEquals(0, historyManager.getHistory().size(), "История должна быть пуста");
-        historyManager.add(new Task("Task", "Desk"));
+        historyManager.add(new Task(2, "Task", "Desk"));
         assertEquals(1, historyManager.getHistory().size(), "История не должна быть пуста");
 
     }
@@ -64,7 +63,7 @@ class ManagersTest {
     void getDefaultIdGeneratorShouldReturnNonNullIdGenerator() {
         IdGenerator idGenerator = Managers.getDefaultIdGenerator();
         assertNotNull(idGenerator, "getDefaultIdGenerator() должен возвращать не null");
-        assertTrue(idGenerator instanceof IdGeneratorImpl,
+        assertInstanceOf(IdGeneratorImpl.class, idGenerator,
                 "getDefaultIdGenerator() должен возвращать IdGeneratorImpl");
         assertEquals(1, idGenerator.nextId(), "Id не соответсвует для первой записи");
     }

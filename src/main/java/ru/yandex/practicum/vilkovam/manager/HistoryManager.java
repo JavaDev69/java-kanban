@@ -1,7 +1,5 @@
 package ru.yandex.practicum.vilkovam.manager;
 
-import ru.yandex.practicum.vilkovam.model.Epic;
-import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;
 
 import java.util.List;
@@ -16,7 +14,5 @@ public interface HistoryManager {
 
     void add(Task task);
 
-    void add(Subtask subtask);
-
-    void add(Epic epic);
+    void remove(int id);
 }

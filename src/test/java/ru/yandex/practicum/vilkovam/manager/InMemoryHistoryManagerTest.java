@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -24,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @project java-kanban
  */
 class InMemoryHistoryManagerTest {
-    public static final int MAX_HISTORY_SIZE = 10;
+    public static final int MAX_HISTORY_SIZE = 0;
     HistoryManager historyManager;
 
     @BeforeEach
@@ -48,29 +47,111 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
+    void shouldEmptyHistoryWhenLastTaskWasDelete() {
+        Task task = new Task(1, "Test 1", "Test 1 description");
+
+        historyManager.add(task);
+        historyManager.remove(task.getId());
+
+        List<Task> actualTasks = historyManager.getHistory();
+        assertEquals(0, actualTasks.size(), "История не пуста");
+    }
+
+    @Test
+    void shouldContainSingleTaskWhenSecondDelete() {
+        Task task = new Task(1, "Test 1", "Test 1 description");
+        Task secondTask = new Task(5, "Test 5", "Test 5 description");
+
+        historyManager.add(task);
+        historyManager.add(secondTask);
+        historyManager.remove(secondTask.getId());
+
+        List<Task> actualTasks = historyManager.getHistory();
+        assertEquals(1, actualTasks.size(), "История не пуста");
+        assertEquals(task, actualTasks.getLast(), "Задачи не совпадают.");
+    }
+
+    @Test
+    void shouldContainSingleTaskWhenFirstDelete() {
+        Task task = new Task(1, "Test 1", "Test 1 description");
+        Task secondTask = new Task(5, "Test 5", "Test 5 description");
+
+        historyManager.add(task);
+        historyManager.add(secondTask);
+        historyManager.remove(task.getId());
+
+        List<Task> actualTasks = historyManager.getHistory();
+        assertEquals(1, actualTasks.size(), "История не пуста");
+        assertEquals(secondTask, actualTasks.getLast(), "Задачи не совпадают.");
+    }
+
+    @Test
+    void shouldContainTwoTaskWhenMiddleTaskDelete() {
+        Task task = new Task(1, "Test 1", "Test 1 description");
+        Task secondTask = new Task(5, "Test 5", "Test 5 description");
+        Task thirdTask = new Task(3, "Test 3", "Test 3 description");
+
+        historyManager.add(task);
+        historyManager.add(secondTask);
+        historyManager.add(thirdTask);
+        historyManager.remove(secondTask.getId());
+
+        List<Task> actualTasks = historyManager.getHistory();
+        List<Task> expectedResult = List.of(thirdTask, task);
+        assertIterableEquals(expectedResult, actualTasks, "Задачи не совпадают.");
+    }
+
+    @Test
     void shouldAddSingleTaskToHistory() {
         Task firstTask = new Task(1, "Test addNewTask", "Test addNewTask description");
         historyManager.add(firstTask);
 
         List<Task> actualHistory = historyManager.getHistory();
-        assertNotNull(actualHistory, "После добавления задачи, история не должна быть пустой.");
+        assertNotNull(actualHistory, "После добавления задачи, история не должна быть null.");
         assertEquals(1, actualHistory.size(), "Количество задач в истории не совпадают.");
         assertEquals(firstTask, actualHistory.getFirst(), "Задачи не совпадают.");
     }
 
     @Test
-    void shouldContainTenTaskAfterAddingElevenTaskToHistory() {
+    void shouldNotAddTaskToHistoryWithoutTaskId() {
+        Task firstTask = new Task("Test addNewTask", "Test addNewTask description");
+        historyManager.add(firstTask);
+
+        List<Task> actualHistory = historyManager.getHistory();
+        assertNotNull(actualHistory, "После добавления задачи, история не должна быть null.");
+        assertEquals(0, actualHistory.size(), "Количество задач в истории не совпадают.");
+    }
+
+    @Test
+    void shouldContainElevenTaskAfterAddingElevenTaskToHistory() {
+        final int taskCount = 11;
         List<Task> tasks = IntStream.iterate(1, i -> i + 1)
-                .limit(11)
+                .limit(taskCount)
                 .mapToObj(id -> new Task(id, "Test " + id, "Test description " + id))
                 .toList();
         tasks.forEach(historyManager::add);
         List<Task> actualHistory = historyManager.getHistory();
 
-        assertEquals(MAX_HISTORY_SIZE, actualHistory.size(), "Количество задач в истории не совпадают.");
-        assertEquals(tasks.get(10), actualHistory.getFirst(), "Первый в списке - последний добавленный");
+        assertEquals(taskCount, actualHistory.size(), "Количество задач в истории не совпадают.");
+        assertEquals(tasks.get(taskCount - 1), actualHistory.getFirst(), "Первый в списке - последний добавленный");
+        assertEquals(tasks.getFirst(), actualHistory.getLast(), "Последний в списке - второй добавленный");
+    }
+
+    @Test
+    void shouldContainTenTaskAfterAddingElevenTaskToHistoryWithMaxSizeTen() {
+        final int maxTaskCount = 10;
+        historyManager = new InMemoryHistoryManager(maxTaskCount);
+        final int taskCount = 11;
+        List<Task> tasks = IntStream.iterate(1, i -> i + 1)
+                .limit(taskCount)
+                .mapToObj(id -> new Task(id, "Test " + id, "Test description " + id))
+                .toList();
+        tasks.forEach(historyManager::add);
+        List<Task> actualHistory = historyManager.getHistory();
+
+        assertEquals(maxTaskCount, actualHistory.size(), "Количество задач в истории не совпадают.");
+        assertEquals(tasks.get(taskCount - 1), actualHistory.getFirst(), "Первый в списке - последний добавленный");
         assertEquals(tasks.get(1), actualHistory.getLast(), "Последний в списке - второй добавленный");
-        assertFalse(actualHistory.contains(tasks.get(0)), "Первый добавленный отсутствует в списке");
     }
 
     @Test
@@ -83,7 +164,7 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
-    void shouldSavePreviousVersionTaskInHistory() {
+    void shouldNotSavePreviousVersionTaskInHistory() {
         TaskManager taskManager = Managers.getDefault();
         Task createdTask = taskManager.createTask(new Task("Task", "Desk"));
 
@@ -102,7 +183,7 @@ class InMemoryHistoryManagerTest {
         taskManager.getTaskById(createdTask.getId());
         history = taskManager.getHistory();
 
-        assertEquals(2, history.size(), "История не должна быть пуста");
-        assertIterableEquals(List.of(changedTask, createdTask), history, "История не совпадает");
+        assertEquals(1, history.size(), "История не должна быть пуста");
+        assertIterableEquals(List.of(changedTask), history, "История не совпадает");
     }
 }
