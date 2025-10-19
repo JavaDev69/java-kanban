@@ -68,7 +68,7 @@ public class Main {
         taskManager.removeTaskById(secondTask.getId());
         taskManager.getHistory().forEach(System.out::println);
         System.out.println("#".repeat(15));
-        
+
         taskManager.removeEpicById(epicWithSubtask.getId());
         taskManager.getHistory().forEach(System.out::println);
         System.out.println("#".repeat(15));
