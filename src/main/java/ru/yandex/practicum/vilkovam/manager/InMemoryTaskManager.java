@@ -22,10 +22,20 @@ public class InMemoryTaskManager implements TaskManager {
     private final HistoryManager historyManager;
 
     public InMemoryTaskManager(IdGenerator idGenerator, HistoryManager historyManager) {
+        this(historyManager,
+                new TaskController<>(idGenerator, Task::new),
+                new EpicController(idGenerator, Epic::new),
+                new TaskController<>(idGenerator, Subtask::new));
+    }
+
+    public InMemoryTaskManager(HistoryManager historyManager,
+                               TaskController<Task> taskController,
+                               TaskController<Epic> epicController,
+                               TaskController<Subtask> subTaskController) {
         this.historyManager = historyManager;
-        taskController = new TaskController<>(idGenerator, Task::new);
-        epicController = new EpicController(idGenerator, Epic::new);
-        subTaskController = new TaskController<>(idGenerator, Subtask::new);
+        this.taskController = taskController;
+        this.epicController = epicController;
+        this.subTaskController = subTaskController;
     }
 
     @Override

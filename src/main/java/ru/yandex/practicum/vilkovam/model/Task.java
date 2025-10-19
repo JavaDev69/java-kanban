@@ -33,6 +33,13 @@ public class Task {
         this.status = task.getStatus();
     }
 
+    public Task(Integer id, String name, String description, TaskStatus status) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.status = status;
+    }
+
     public Integer getId() {
         return id;
     }
@@ -43,6 +50,10 @@ public class Task {
 
     public String getName() {
         return name;
+    }
+
+    public ItemType getType() {
+        return ItemType.TASK;
     }
 
     public void setName(String name) {

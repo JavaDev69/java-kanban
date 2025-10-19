@@ -2,6 +2,7 @@ package ru.yandex.practicum.vilkovam.manager;
 
 import ru.yandex.practicum.vilkovam.model.Epic;
 
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 /**
@@ -12,6 +13,10 @@ import java.util.function.UnaryOperator;
 public class EpicController extends TaskController<Epic> {
     public EpicController(IdGenerator idGenerator, UnaryOperator<Epic> mapper) {
         super(idGenerator, mapper);
+    }
+
+    public EpicController(IdGenerator idGenerator, UnaryOperator<Epic> mapper, Map<Integer, Epic> idToItem) {
+        super(idGenerator, mapper, idToItem);
     }
 
     @Override

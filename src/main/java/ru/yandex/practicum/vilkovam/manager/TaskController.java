@@ -5,6 +5,7 @@ import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;
 import ru.yandex.practicum.vilkovam.model.TaskStatus;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,13 +17,18 @@ import java.util.function.UnaryOperator;
  * @project java-kanban
  */
 public class TaskController<T extends Task> implements Controller<T> {
-    protected final Map<Integer, T> idToItem = new HashMap<>();
+    protected final Map<Integer, T> idToItem;
     private final IdGenerator idGenerator;
     protected final UnaryOperator<T> mapper;
 
     public TaskController(IdGenerator idGenerator, UnaryOperator<T> mapper) {
+        this(idGenerator, mapper, Collections.emptyMap());
+    }
+
+    public TaskController(IdGenerator idGenerator, UnaryOperator<T> mapper, Map<Integer, T> idToItem) {
         this.idGenerator = idGenerator;
         this.mapper = mapper;
+        this.idToItem = new HashMap<>(idToItem);
     }
 
     @Override
