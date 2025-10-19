@@ -15,6 +15,7 @@ public class Main {
 
     public static void main(String[] args) {
         TaskManager taskManager = Managers.getDefault();
+
         var firstTask = new Task("Test firstTask", "Test firstTask description");
         var secondTask = new Task("Test secondTask", "Test secondTask description");
         taskManager.createTask(firstTask);
@@ -67,7 +68,7 @@ public class Main {
         taskManager.removeTaskById(secondTask.getId());
         taskManager.getHistory().forEach(System.out::println);
         System.out.println("#".repeat(15));
-
+        
         taskManager.removeEpicById(epicWithSubtask.getId());
         taskManager.getHistory().forEach(System.out::println);
         System.out.println("#".repeat(15));

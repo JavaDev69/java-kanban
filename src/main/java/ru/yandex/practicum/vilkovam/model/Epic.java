@@ -24,6 +24,16 @@ public class Epic extends Task {
         this.subtaskIds.addAll(epic.subtaskIds);
     }
 
+    public Epic(Integer id, String name, String description, TaskStatus status, List<Integer> subtaskIds) {
+        super(id, name, description, status);
+        this.subtaskIds.addAll(subtaskIds);
+    }
+
+    @Override
+    public ItemType getType() {
+        return ItemType.EPIC;
+    }
+
     public List<Integer> getSubtaskIds() {
         return subtaskIds;
     }
