@@ -7,4 +7,6 @@ package ru.yandex.practicum.vilkovam.manager;
  */
 public interface IdGenerator {
     int nextId();
+
+    void setNextId(int id);
 }

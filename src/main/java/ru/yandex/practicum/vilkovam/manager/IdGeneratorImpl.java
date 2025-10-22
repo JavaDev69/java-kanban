@@ -12,4 +12,10 @@ public class IdGeneratorImpl implements IdGenerator {
     public int nextId() {
         return id++;
     }
+
+    @Override
+    public void setNextId(int id) {
+        if (id < 0) return;
+        this.id = id;
+    }
 }

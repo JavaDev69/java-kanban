@@ -11,7 +11,10 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardOpenOption.APPEND;
@@ -74,6 +77,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 }
             });
 
+            OptionalInt maxId = Stream.of(idToTask, idToEpic, idToSubtask)
+                    .map(Map::keySet)
+                    .flatMap(Set::stream)
+                    .mapToInt(Integer::intValue)
+                    .max();
+
+            idGenerator.setNextId(maxId.orElse(1));
+            
             return new FileBackedTaskManager(
                     file,
                     historyManager,
