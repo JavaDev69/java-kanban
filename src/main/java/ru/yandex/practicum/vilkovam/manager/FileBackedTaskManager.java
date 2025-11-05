@@ -84,7 +84,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     .max();
 
             idGenerator.setNextId(maxId.orElse(1));
-            
+
             return new FileBackedTaskManager(
                     file,
                     historyManager,
