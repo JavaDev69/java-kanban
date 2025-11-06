@@ -6,6 +6,9 @@ import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;
 import ru.yandex.practicum.vilkovam.util.Managers;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 /**
  * @author Andrew Vilkov
  * @created 20.09.2025 - 20:16
@@ -29,47 +32,46 @@ public class Main {
         var firstSubtask = new Subtask(epicWithSubtask.getId(), "Test firstSubtask", "Test firstSubtask description");
         var secondSubtask = new Subtask(epicWithSubtask.getId(), "Test secondSubtask", "Test secondSubtask description");
         var thirdSubtask = new Subtask(epicWithSubtask.getId(), "Test thirdSubtask", "Test thirdSubtask description");
+        secondSubtask.setDuration(Duration.ofMinutes(5));
+        secondSubtask.setStartTime(LocalDateTime.now());
+        firstSubtask.setDuration(Duration.ofMinutes(2));
+        firstSubtask.setStartTime(LocalDateTime.now().plusHours(1));
         taskManager.createSubtask(firstSubtask);
         taskManager.createSubtask(secondSubtask);
         taskManager.createSubtask(thirdSubtask);
 
         taskManager.getTaskById(secondTask.getId());
-        taskManager.getHistory().forEach(System.out::println);
-        System.out.println("#".repeat(15));
+        printHistory(taskManager);
 
         taskManager.getTaskById(secondTask.getId());
-        taskManager.getHistory().forEach(System.out::println);
-        System.out.println("#".repeat(15));
+        printHistory(taskManager);
 
         taskManager.getEpicById(epicWithSubtask.getId());
-        taskManager.getHistory().forEach(System.out::println);
-        System.out.println("#".repeat(15));
+        printHistory(taskManager);
 
         taskManager.getTaskById(firstTask.getId());
-        taskManager.getHistory().forEach(System.out::println);
-        System.out.println("#".repeat(15));
+        printHistory(taskManager);
 
         taskManager.getTaskById(secondTask.getId());
-        taskManager.getHistory().forEach(System.out::println);
-        System.out.println("#".repeat(15));
+        printHistory(taskManager);
 
         taskManager.getSubtaskById(firstSubtask.getId());
-        taskManager.getHistory().forEach(System.out::println);
-        System.out.println("#".repeat(15));
+        printHistory(taskManager);
 
         taskManager.getSubtaskById(thirdSubtask.getId());
-        taskManager.getHistory().forEach(System.out::println);
-        System.out.println("#".repeat(15));
+        printHistory(taskManager);
 
         taskManager.getSubtaskById(firstSubtask.getId());
-        taskManager.getHistory().forEach(System.out::println);
-        System.out.println("#".repeat(15));
+        printHistory(taskManager);
 
         taskManager.removeTaskById(secondTask.getId());
-        taskManager.getHistory().forEach(System.out::println);
-        System.out.println("#".repeat(15));
+        printHistory(taskManager);
 
         taskManager.removeEpicById(epicWithSubtask.getId());
+        printHistory(taskManager);
+    }
+
+    private static void printHistory(TaskManager taskManager) {
         taskManager.getHistory().forEach(System.out::println);
         System.out.println("#".repeat(15));
     }

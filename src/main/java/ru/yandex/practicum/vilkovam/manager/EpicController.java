@@ -15,8 +15,8 @@ public class EpicController extends TaskController<Epic> {
         super(idGenerator, mapper);
     }
 
-    public EpicController(IdGenerator idGenerator, UnaryOperator<Epic> mapper, Map<Integer, Epic> idToItem) {
-        super(idGenerator, mapper, idToItem);
+    public EpicController(IdGenerator idGenerator, UnaryOperator<Epic> mapper, Map<Integer, Epic> storage, Map<Integer, Epic> idToItem) {
+        super(idGenerator, mapper, storage, idToItem);
     }
 
     @Override

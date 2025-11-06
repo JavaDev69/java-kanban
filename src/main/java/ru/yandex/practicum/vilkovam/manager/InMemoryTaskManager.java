@@ -1,12 +1,22 @@
 package ru.yandex.practicum.vilkovam.manager;
 
+import ru.yandex.practicum.vilkovam.exceptions.OverlappingTaskException;
 import ru.yandex.practicum.vilkovam.model.Epic;
 import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;
 import ru.yandex.practicum.vilkovam.model.TaskStatus;
+import ru.yandex.practicum.vilkovam.util.Managers;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,26 +30,33 @@ public class InMemoryTaskManager implements TaskManager {
     private final TaskController<Epic> epicController;
     private final TaskController<Subtask> subTaskController;
     private final HistoryManager historyManager;
+    private final SortedSet<Task> prioritizedTasks;
 
     public InMemoryTaskManager(IdGenerator idGenerator, HistoryManager historyManager) {
-        this(historyManager,
-                new TaskController<>(idGenerator, Task::new),
-                new EpicController(idGenerator, Epic::new),
-                new TaskController<>(idGenerator, Subtask::new));
+        this.prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTime));
+        this.historyManager = historyManager;
+
+        ControllersHolder controllers = Managers.getDefaultControllers(idGenerator);
+        this.taskController = controllers.taskController();
+        this.epicController = controllers.epicController();
+        this.subTaskController = controllers.subtaskController();
     }
 
-    public InMemoryTaskManager(HistoryManager historyManager,
-                               TaskController<Task> taskController,
-                               TaskController<Epic> epicController,
-                               TaskController<Subtask> subTaskController) {
+    public InMemoryTaskManager(SortedSet<Task> prioritizedTasks,
+                               HistoryManager historyManager,
+                               ControllersHolder controllers) {
+        this.prioritizedTasks = prioritizedTasks;
         this.historyManager = historyManager;
-        this.taskController = taskController;
-        this.epicController = epicController;
-        this.subTaskController = subTaskController;
+        this.taskController = controllers.taskController();
+        this.epicController = controllers.epicController();
+        this.subTaskController = controllers.subtaskController();
     }
 
     @Override
     public Task createTask(Task task) {
+        if (isOverlapTask(task)) {
+            throw new OverlappingTaskException(task);
+        }
         return taskController.create(task);
     }
 
@@ -52,6 +69,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateTask(Task task) {
+        if (isOverlapTask(task)) {
+            throw new OverlappingTaskException(task);
+        }
         taskController.update(task);
     }
 
@@ -102,12 +122,16 @@ public class InMemoryTaskManager implements TaskManager {
         if (subtask == null || subtask.getEpicId() == null || !epicController.existsById(subtask.getEpicId())) {
             return null;
         }
+        if (isOverlapTask(subtask)) {
+            throw new OverlappingTaskException(subtask);
+        }
 
         Subtask savedSubtask = subTaskController.create(subtask);
         Epic epicById = epicController.getById(savedSubtask.getEpicId());
         List<Integer> subtaskIds = epicById.getSubtaskIds();
         subtaskIds.add(savedSubtask.getId());
         epicController.update(epicById);
+        updateEpicStatus(epicById);
         return savedSubtask;
     }
 
@@ -123,6 +147,9 @@ public class InMemoryTaskManager implements TaskManager {
         if (subtask == null || !subTaskController.existsById(subtask.getId())
                 || !epicController.existsById(subtask.getEpicId())) {
             return;
+        }
+        if (isOverlapTask(subtask)) {
+            throw new OverlappingTaskException(subtask);
         }
 
         Subtask savedSubtask = subTaskController.getById(subtask.getId());
@@ -156,6 +183,11 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Task> getHistory() {
         return historyManager.getHistory();
+    }
+
+    @Override
+    public Set<Task> getPrioritizedTasks() {
+        return Collections.unmodifiableSet(prioritizedTasks);
     }
 
     /**
@@ -230,6 +262,7 @@ public class InMemoryTaskManager implements TaskManager {
         } else {
             targetEpic.setStatus(TaskStatus.IN_PROGRESS);
         }
+        updateEpicDurationAndEndTime(targetEpic);
         epicController.update(targetEpic);
     }
 
@@ -247,4 +280,50 @@ public class InMemoryTaskManager implements TaskManager {
                 .allMatch(e -> status.equals(e.getStatus()));
     }
 
+    private void updateEpicDurationAndEndTime(Epic epic) {
+        List<Subtask> allSubtaskByEpicId = getAllSubtaskByEpicId(epic.getId());
+        if (allSubtaskByEpicId.isEmpty()) return;
+
+        Duration epicDuration = allSubtaskByEpicId.stream()
+                .map(Subtask::getDuration)
+                .filter(Objects::nonNull)
+                .reduce(Duration.ZERO, Duration::plus);
+
+        epic.setDuration(epicDuration);
+
+        var epicStartTime = allSubtaskByEpicId.stream()
+                .map(Subtask::getStartTime)
+                .filter(Objects::nonNull)
+                .min(Comparator.naturalOrder())
+                .orElse(null);
+
+        epic.setStartTime(epicStartTime);
+
+        var epicEndTime = allSubtaskByEpicId.stream()
+                .map(Subtask::getEndTime)
+                .filter(Objects::nonNull)
+                .max(Comparator.naturalOrder())
+                .orElse(null);
+
+        epic.setEndTime(epicEndTime);
+    }
+
+    private boolean isOverlapTask(Task task) {
+        if (prioritizedTasks == null || prioritizedTasks.isEmpty() || task == null) return false;
+        return getPrioritizedTasks().stream()
+                .filter(e -> !Objects.equals(e.getId(), task.getId()))
+                .anyMatch(e -> isOverlapTasks(task, e));
+    }
+
+    private static boolean isOverlapTasks(Task t1, Task t2) {
+        LocalDateTime startTime1 = t1.getStartTime();
+        LocalDateTime endTime1 = t1.getEndTime();
+
+        LocalDateTime startTime2 = t2.getStartTime();
+        LocalDateTime endTime2 = t2.getEndTime();
+
+        return startTime2.isAfter(startTime1) && startTime2.isBefore(endTime1)
+                || endTime2.isAfter(startTime1) && endTime2.isBefore(endTime1)
+                || startTime2.isBefore(startTime1) && endTime2.isAfter(endTime1);
+    }
 }

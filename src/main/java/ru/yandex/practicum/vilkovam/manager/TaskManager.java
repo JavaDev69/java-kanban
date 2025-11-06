@@ -5,6 +5,7 @@ import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Andrew Vilkov
@@ -12,6 +13,9 @@ import java.util.List;
  * @project java-kanban
  */
 public interface TaskManager {
+
+    Set<Task> getPrioritizedTasks();
+
     Task createTask(Task task);
 
     Task getTaskById(Integer id);

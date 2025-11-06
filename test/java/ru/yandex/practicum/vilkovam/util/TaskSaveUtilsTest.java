@@ -28,7 +28,7 @@ class TaskSaveUtilsTest {
         Task task = new Task(1, "TaskName", "TaskDescription", TaskStatus.NEW);
 
         String result = TaskSaveUtils.toString(task);
-        String expected = "1,TASK,TaskName,NEW,TaskDescription,"; // последний элемент пустая строка
+        String expected = "1,TASK,TaskName,NEW,TaskDescription,,,";
 
         assertEquals(expected, result);
     }
@@ -38,7 +38,7 @@ class TaskSaveUtilsTest {
         Epic epic = new Epic(2, "EpicName", "EpicDescription", TaskStatus.IN_PROGRESS, Collections.emptyList());
 
         String result = TaskSaveUtils.toString(epic);
-        String expected = "2,EPIC,EpicName,IN_PROGRESS,EpicDescription,";
+        String expected = "2,EPIC,EpicName,IN_PROGRESS,EpicDescription,,,";
 
         assertEquals(expected, result);
     }
@@ -48,14 +48,14 @@ class TaskSaveUtilsTest {
         Subtask subtask = new Subtask(3, "SubtaskName", "SubtaskDescription", TaskStatus.DONE, 10);
 
         String result = TaskSaveUtils.toString(subtask);
-        String expected = "3,SUBTASK,SubtaskName,DONE,SubtaskDescription,10";
+        String expected = "3,SUBTASK,SubtaskName,DONE,SubtaskDescription,,,10";
 
         assertEquals(expected, result);
     }
 
     @Test
     void shouldDeserializeTaskSuccess() {
-        String input = "1,TASK,TaskName,NEW,TaskDescription,";
+        String input = "1,TASK,TaskName,NEW,TaskDescription,,,";
 
         Task task = TaskSaveUtils.fromString(input);
 
@@ -65,12 +65,14 @@ class TaskSaveUtilsTest {
         assertEquals("TaskDescription", task.getDescription());
         assertEquals(TaskStatus.NEW, task.getStatus());
         assertEquals(ItemType.TASK, task.getType());
+        assertNull(task.getDuration());
+        assertNull(task.getStartTime());
         assertInstanceOf(Task.class, task);
     }
 
     @Test
     void shouldDeserializeEpicSuccess() {
-        String input = "2,EPIC,EpicName,IN_PROGRESS,EpicDescription,";
+        String input = "2,EPIC,EpicName,IN_PROGRESS,EpicDescription,,,";
 
         Task task = TaskSaveUtils.fromString(input);
 
@@ -83,12 +85,14 @@ class TaskSaveUtilsTest {
         assertEquals("EpicDescription", epic.getDescription());
         assertEquals(TaskStatus.IN_PROGRESS, epic.getStatus());
         assertEquals(ItemType.EPIC, epic.getType());
+        assertNull(epic.getDuration());
+        assertNull(epic.getStartTime());
         assertIterableEquals(Collections.emptyList(), epic.getSubtaskIds());
     }
 
     @Test
     void shouldDeserializeSubtaskSuccess() {
-        String input = "3,SUBTASK,SubtaskName,DONE,SubtaskDescription,10";
+        String input = "3,SUBTASK,SubtaskName,DONE,SubtaskDescription,,,10";
 
         Task task = TaskSaveUtils.fromString(input);
 
@@ -115,14 +119,14 @@ class TaskSaveUtilsTest {
 
     @Test
     void shouldThrowExceptionIfInvalidStatus() {
-        String input = "1,TASK,TaskName,INVALID_STATUS,Description,";
+        String input = "1,TASK,TaskName,INVALID_STATUS,Description,,,";
 
         assertThrows(IllegalArgumentException.class, () -> TaskSaveUtils.fromString(input));
     }
 
     @Test
     void shouldThrowExceptionIfInvalidType() {
-        String input = "1,INVALID_TYPE,TaskName,NEW,Description,";
+        String input = "1,INVALID_TYPE,TaskName,NEW,Description,,,";
 
         assertThrows(IllegalArgumentException.class, () -> TaskSaveUtils.fromString(input));
     }

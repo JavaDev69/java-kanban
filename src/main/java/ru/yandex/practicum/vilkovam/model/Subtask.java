@@ -1,5 +1,8 @@
 package ru.yandex.practicum.vilkovam.model;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 /**
  * @author Andrew Vilkov
  * @created 28.08.2025 - 10:50
@@ -18,17 +21,25 @@ public class Subtask extends Task {
     }
 
     public Subtask(int id, Integer epicId, String name, String description) {
-        super(id, name, description);
-        this.epicId = epicId;
+        this(id, name, description, null, epicId);
     }
 
     public Subtask(Integer epicId, String name, String description) {
-        super(name, description);
-        this.epicId = epicId;
+        this(null, name, description, null, epicId);
     }
 
     public Subtask(Integer id, String name, String description, TaskStatus status, Integer epicId) {
-        super(id, name, description, status);
+        this(id, name, description, status, epicId, null, null);
+    }
+
+    public Subtask(Integer id,
+                   String name,
+                   String description,
+                   TaskStatus status,
+                   Integer epicId,
+                   Duration duration,
+                   LocalDateTime startTime) {
+        super(id, name, description, status, duration, startTime);
         this.epicId = epicId;
     }
 
@@ -53,6 +64,8 @@ public class Subtask extends Task {
                 ", name='" + getName() + '\'' +
                 ", description='" + getDescription() + '\'' +
                 ", status=" + getStatus() +
+                ", duration='" + getDuration() + '\'' +
+                ", startTime='" + getStartTime() + '\'' +
                 '}';
     }
 }

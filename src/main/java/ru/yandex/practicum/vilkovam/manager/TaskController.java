@@ -22,13 +22,18 @@ public class TaskController<T extends Task> implements Controller<T> {
     protected final UnaryOperator<T> mapper;
 
     public TaskController(IdGenerator idGenerator, UnaryOperator<T> mapper) {
-        this(idGenerator, mapper, Collections.emptyMap());
+        this(idGenerator, new HashMap<>(), mapper);
     }
 
-    public TaskController(IdGenerator idGenerator, UnaryOperator<T> mapper, Map<Integer, T> idToItem) {
+    public TaskController(IdGenerator idGenerator, Map<Integer, T> storage, UnaryOperator<T> mapper) {
+        this(idGenerator, mapper, storage, Collections.emptyMap());
+    }
+
+    public TaskController(IdGenerator idGenerator, UnaryOperator<T> mapper, Map<Integer, T> storage, Map<Integer, T> idToItem) {
         this.idGenerator = idGenerator;
         this.mapper = mapper;
-        this.idToItem = new HashMap<>(idToItem);
+        this.idToItem = storage;
+        this.idToItem.putAll(idToItem);
     }
 
     @Override

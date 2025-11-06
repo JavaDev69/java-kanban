@@ -1,5 +1,6 @@
 package ru.yandex.practicum.vilkovam.model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import java.util.List;
  */
 public class Epic extends Task {
     private final List<Integer> subtaskIds = new ArrayList<>();
+    private LocalDateTime endTime;
 
     public Epic(String name, String description) {
         super(name, description);
@@ -22,6 +24,7 @@ public class Epic extends Task {
     public Epic(Epic epic) {
         super(epic);
         this.subtaskIds.addAll(epic.subtaskIds);
+        this.endTime = epic.endTime;
     }
 
     public Epic(Integer id, String name, String description, TaskStatus status, List<Integer> subtaskIds) {
@@ -39,6 +42,15 @@ public class Epic extends Task {
     }
 
     @Override
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    @Override
     public String toString() {
         return "Epic{" +
                 "id=" + getId() +
@@ -46,6 +58,9 @@ public class Epic extends Task {
                 ", description='" + getDescription() + '\'' +
                 ", status=" + getStatus() +
                 ", subtasks.size=" + getSubtaskIds().size() +
+                ", duration='" + getDuration() + '\'' +
+                ", startTime='" + getStartTime() + '\'' +
+                ", endTime='" + endTime + '\'' +
                 '}';
     }
 }
