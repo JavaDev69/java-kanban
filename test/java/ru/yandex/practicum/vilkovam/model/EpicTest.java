@@ -18,7 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * @project java-kanban
  */
 class EpicTest {
-    private static final String TO_STRING_FORMAT = "Epic{id=%s, name='%s', description='%s', status=%s, subtasks.size=%d}";
+    private static final String TO_STRING_FORMAT = "Epic{id=%s, name='%s', description='%s', status=%s, " +
+            "subtasks.size=%d, duration='%s', startTime='%s', endTime='%s'}";
 
     @Test
     void settersAndGettersShouldWorkCorrectly() {
@@ -104,7 +105,7 @@ class EpicTest {
         String str = epic.toString();
 
         assertNotNull(str, "toString не должен возвращать null");
-        assertEquals(format(TO_STRING_FORMAT, 7, "Name", "Desc", TaskStatus.NEW, 0), str,
+        assertEquals(format(TO_STRING_FORMAT, 7, "Name", "Desc", TaskStatus.NEW, 0, null, null, null), str,
                 "Формат должен соответствовать: " + TO_STRING_FORMAT);
     }
 }

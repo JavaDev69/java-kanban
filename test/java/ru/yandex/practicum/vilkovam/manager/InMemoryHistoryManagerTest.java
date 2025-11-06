@@ -32,6 +32,32 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
+    void shouldEmptyHistoryAfterRemoveAll() {
+        Task task = new Task(1, "Test 1", "Test 1 description");
+        Epic epic = new Epic(5, "Test 3", "Test 3 description");
+        Subtask subtask = new Subtask(6, 5, "Test 2", "Test 2 description");
+
+        historyManager.add(task);
+        historyManager.add(subtask);
+        historyManager.add(epic);
+
+        List<Task> expectedTasks = List.of(epic, subtask, task);
+        List<Task> actualTasks = historyManager.getHistory();
+        assertIterableEquals(expectedTasks, actualTasks, "Задачи не совпадают.");
+
+        historyManager.remove(epic.getId());
+        historyManager.remove(subtask.getId());
+        historyManager.remove(task.getId());
+
+        assertIterableEquals(Collections.emptyList(), historyManager.getHistory(), "История должна быть пуста");
+    }
+
+    @Test
+    void shouldEmptyHistoryWhenStart() {
+        assertIterableEquals(Collections.emptyList(), historyManager.getHistory(), "История должна быть пуста");
+    }
+
+    @Test
     void shouldAddMultipleTasksToHistoryInCorrectOrder() {
         Task task = new Task(1, "Test 1", "Test 1 description");
         Epic epic = new Epic(5, "Test 3", "Test 3 description");

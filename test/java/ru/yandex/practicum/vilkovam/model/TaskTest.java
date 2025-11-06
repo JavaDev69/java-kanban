@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * @project java-kanban
  */
 class TaskTest {
-    private static final String TO_STRING_FORMAT = "Task{id=%s, name='%s', description='%s', status=%s}";
+    private static final String TO_STRING_FORMAT = "Task{id=%s, name='%s', description='%s', status=%s, duration='%s', startTime='%s'}";
 
     @Test
     void settersAndGettersShouldWorkCorrectly() {
@@ -96,7 +96,7 @@ class TaskTest {
         String str = task.toString();
 
         assertNotNull(str, "toString не должен возвращать null");
-        assertEquals(format(TO_STRING_FORMAT, 7, "Name", "Desc", TaskStatus.NEW), str,
+        assertEquals(format(TO_STRING_FORMAT, 7, "Name", "Desc", TaskStatus.NEW, null, null), str,
                 "Формат должен соответствовать: " + TO_STRING_FORMAT);
     }
 }
