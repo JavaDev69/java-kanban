@@ -1,5 +1,6 @@
-package ru.yandex.practicum.vilkovam.manager;
+package ru.yandex.practicum.vilkovam.controller.impl;
 
+import ru.yandex.practicum.vilkovam.manager.IdGenerator;
 import ru.yandex.practicum.vilkovam.model.Epic;
 
 import java.util.Map;

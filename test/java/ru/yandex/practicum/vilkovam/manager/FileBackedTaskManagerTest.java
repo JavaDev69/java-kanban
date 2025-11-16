@@ -3,6 +3,7 @@ package ru.yandex.practicum.vilkovam.manager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.vilkovam.exceptions.ManagerSaveException;
+import ru.yandex.practicum.vilkovam.manager.impl.FileBackedTaskManager;
 import ru.yandex.practicum.vilkovam.model.Epic;
 import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;
@@ -16,11 +17,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Andrew Vilkov
@@ -72,10 +75,10 @@ class FileBackedTaskManagerTest extends TaskManagerTest {
                 Managers.getDefaultIdGenerator(),
                 Managers.getDefaultHistory());
 
-        final Task savedTask = taskManager.getTaskById(task.getId());
+        Optional<Task> savedTask = taskManager.getTaskById(task.getId());
 
-        assertNotNull(savedTask, "Задача не найдена.");
-        assertEquals(task, savedTask, "Задачи не совпадают.");
+        assertTrue(savedTask.isPresent(), "Задача не найдена.");
+        assertEquals(task, savedTask.get(), "Задачи не совпадают.");
 
         final List<Task> tasks = taskManager.getAllTask();
 

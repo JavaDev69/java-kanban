@@ -1,6 +1,7 @@
 package ru.yandex.practicum.vilkovam.manager;
 
 import org.junit.jupiter.api.BeforeEach;
+import ru.yandex.practicum.vilkovam.manager.impl.InMemoryTaskManager;
 import ru.yandex.practicum.vilkovam.util.Managers;
 
 /**

@@ -1,4 +1,6 @@
-package ru.yandex.practicum.vilkovam.manager;
+package ru.yandex.practicum.vilkovam.manager.impl;
+
+import ru.yandex.practicum.vilkovam.manager.IdGenerator;
 
 /**
  * @author Andrew Vilkov

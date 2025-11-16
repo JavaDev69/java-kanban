@@ -1,4 +1,4 @@
-package ru.yandex.practicum.vilkovam.manager;
+package ru.yandex.practicum.vilkovam.controller;
 
 import ru.yandex.practicum.vilkovam.model.Task;
 

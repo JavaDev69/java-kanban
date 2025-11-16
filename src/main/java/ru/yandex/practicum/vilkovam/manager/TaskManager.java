@@ -5,6 +5,7 @@ import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -18,7 +19,7 @@ public interface TaskManager {
 
     Task createTask(Task task);
 
-    Task getTaskById(Integer id);
+    Optional<Task> getTaskById(Integer id);
 
     void updateTask(Task task);
 
@@ -26,7 +27,7 @@ public interface TaskManager {
 
     Epic createEpic(Epic epic);
 
-    Epic getEpicById(Integer id);
+    Optional<Epic> getEpicById(Integer id);
 
     void updateEpic(Epic epic);
 
@@ -34,7 +35,7 @@ public interface TaskManager {
 
     Subtask createSubtask(Subtask subtask);
 
-    Subtask getSubtaskById(Integer id);
+    Optional<Subtask> getSubtaskById(Integer id);
 
     void updateSubtask(Subtask subtask);
 

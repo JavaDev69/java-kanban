@@ -1,6 +1,7 @@
 package ru.yandex.practicum.vilkovam.manager;
 
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.vilkovam.manager.impl.IdGeneratorImpl;
 
 import java.util.List;
 import java.util.stream.Stream;
