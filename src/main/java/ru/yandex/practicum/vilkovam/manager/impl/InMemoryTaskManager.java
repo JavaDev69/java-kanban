@@ -1,6 +1,11 @@
-package ru.yandex.practicum.vilkovam.manager;
+package ru.yandex.practicum.vilkovam.manager.impl;
 
+import ru.yandex.practicum.vilkovam.controller.ControllersHolder;
+import ru.yandex.practicum.vilkovam.controller.impl.TaskController;
 import ru.yandex.practicum.vilkovam.exceptions.OverlappingTaskException;
+import ru.yandex.practicum.vilkovam.manager.HistoryManager;
+import ru.yandex.practicum.vilkovam.manager.IdGenerator;
+import ru.yandex.practicum.vilkovam.manager.TaskManager;
 import ru.yandex.practicum.vilkovam.model.Epic;
 import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;
@@ -14,6 +19,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -61,10 +67,10 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Task getTaskById(Integer id) {
+    public Optional<Task> getTaskById(Integer id) {
         Task taskById = taskController.getById(id);
         historyManager.add(taskById);
-        return taskById;
+        return Optional.ofNullable(taskById);
     }
 
     @Override
@@ -87,10 +93,10 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Epic getEpicById(Integer id) {
+    public Optional<Epic> getEpicById(Integer id) {
         Epic epicById = epicController.getById(id);
         historyManager.add(epicById);
-        return epicById;
+        return Optional.ofNullable(epicById);
     }
 
     @Override
@@ -136,10 +142,10 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Subtask getSubtaskById(Integer id) {
+    public Optional<Subtask> getSubtaskById(Integer id) {
         Subtask subtask = subTaskController.getById(id);
         historyManager.add(subtask);
-        return subtask;
+        return Optional.ofNullable(subtask);
     }
 
     @Override
@@ -321,6 +327,8 @@ public class InMemoryTaskManager implements TaskManager {
 
         LocalDateTime startTime2 = t2.getStartTime();
         LocalDateTime endTime2 = t2.getEndTime();
+
+        if (startTime1 == null || endTime1 == null || startTime2 == null || endTime2 == null) return false;
 
         return startTime2.isAfter(startTime1) && startTime2.isBefore(endTime1)
                 || endTime2.isAfter(startTime1) && endTime2.isBefore(endTime1)

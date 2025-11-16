@@ -11,14 +11,17 @@ import java.time.LocalDateTime;
 
 /**
  * @author Andrew Vilkov
- * @created 20.09.2025 - 20:16
+ * @created 16.11.2025 - 13:32
  * @project java-kanban
  */
 public class Main {
-
     public static void main(String[] args) {
-        TaskManager taskManager = Managers.getDefault();
+        HttpTaskServer httpTaskServer = new HttpTaskServer(getPreFilledTaskManager());
+        httpTaskServer.start();
+    }
 
+    private static TaskManager getPreFilledTaskManager() {
+        TaskManager taskManager = Managers.getDefault();
         var firstTask = new Task("Test firstTask", "Test firstTask description");
         var secondTask = new Task("Test secondTask", "Test secondTask description");
         taskManager.createTask(firstTask);
@@ -39,40 +42,6 @@ public class Main {
         taskManager.createSubtask(firstSubtask);
         taskManager.createSubtask(secondSubtask);
         taskManager.createSubtask(thirdSubtask);
-
-        taskManager.getTaskById(secondTask.getId());
-        printHistory(taskManager);
-
-        taskManager.getTaskById(secondTask.getId());
-        printHistory(taskManager);
-
-        taskManager.getEpicById(epicWithSubtask.getId());
-        printHistory(taskManager);
-
-        taskManager.getTaskById(firstTask.getId());
-        printHistory(taskManager);
-
-        taskManager.getTaskById(secondTask.getId());
-        printHistory(taskManager);
-
-        taskManager.getSubtaskById(firstSubtask.getId());
-        printHistory(taskManager);
-
-        taskManager.getSubtaskById(thirdSubtask.getId());
-        printHistory(taskManager);
-
-        taskManager.getSubtaskById(firstSubtask.getId());
-        printHistory(taskManager);
-
-        taskManager.removeTaskById(secondTask.getId());
-        printHistory(taskManager);
-
-        taskManager.removeEpicById(epicWithSubtask.getId());
-        printHistory(taskManager);
-    }
-
-    private static void printHistory(TaskManager taskManager) {
-        taskManager.getHistory().forEach(System.out::println);
-        System.out.println("#".repeat(15));
+        return taskManager;
     }
 }

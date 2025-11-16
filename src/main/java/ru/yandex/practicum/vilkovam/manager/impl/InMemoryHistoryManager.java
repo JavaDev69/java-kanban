@@ -1,5 +1,7 @@
-package ru.yandex.practicum.vilkovam.manager;
+package ru.yandex.practicum.vilkovam.manager.impl;
 
+import ru.yandex.practicum.vilkovam.manager.HistoryManager;
+import ru.yandex.practicum.vilkovam.manager.Node;
 import ru.yandex.practicum.vilkovam.model.Task;
 import ru.yandex.practicum.vilkovam.model.TaskHolder;
 

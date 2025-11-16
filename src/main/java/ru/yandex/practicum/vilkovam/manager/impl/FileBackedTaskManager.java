@@ -1,6 +1,12 @@
-package ru.yandex.practicum.vilkovam.manager;
+package ru.yandex.practicum.vilkovam.manager.impl;
 
+import ru.yandex.practicum.vilkovam.controller.ControllersHolder;
+import ru.yandex.practicum.vilkovam.controller.impl.EpicController;
+import ru.yandex.practicum.vilkovam.controller.impl.TaskController;
 import ru.yandex.practicum.vilkovam.exceptions.ManagerSaveException;
+import ru.yandex.practicum.vilkovam.manager.HistoryManager;
+import ru.yandex.practicum.vilkovam.manager.IdGenerator;
+import ru.yandex.practicum.vilkovam.manager.ItemPriorityStorage;
 import ru.yandex.practicum.vilkovam.model.Epic;
 import ru.yandex.practicum.vilkovam.model.ItemType;
 import ru.yandex.practicum.vilkovam.model.Subtask;

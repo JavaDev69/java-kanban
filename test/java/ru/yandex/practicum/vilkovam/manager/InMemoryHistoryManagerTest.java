@@ -2,6 +2,7 @@ package ru.yandex.practicum.vilkovam.manager;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.vilkovam.manager.impl.InMemoryHistoryManager;
 import ru.yandex.practicum.vilkovam.model.Epic;
 import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;

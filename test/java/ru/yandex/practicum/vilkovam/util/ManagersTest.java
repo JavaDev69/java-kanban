@@ -3,10 +3,10 @@ package ru.yandex.practicum.vilkovam.util;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.vilkovam.manager.HistoryManager;
 import ru.yandex.practicum.vilkovam.manager.IdGenerator;
-import ru.yandex.practicum.vilkovam.manager.IdGeneratorImpl;
-import ru.yandex.practicum.vilkovam.manager.InMemoryHistoryManager;
-import ru.yandex.practicum.vilkovam.manager.InMemoryTaskManager;
 import ru.yandex.practicum.vilkovam.manager.TaskManager;
+import ru.yandex.practicum.vilkovam.manager.impl.IdGeneratorImpl;
+import ru.yandex.practicum.vilkovam.manager.impl.InMemoryHistoryManager;
+import ru.yandex.practicum.vilkovam.manager.impl.InMemoryTaskManager;
 import ru.yandex.practicum.vilkovam.model.Task;
 
 import java.util.List;

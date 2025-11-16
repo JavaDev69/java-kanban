@@ -2,7 +2,9 @@ package ru.yandex.practicum.vilkovam.manager;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.vilkovam.controller.ControllersHolder;
 import ru.yandex.practicum.vilkovam.exceptions.OverlappingTaskException;
+import ru.yandex.practicum.vilkovam.manager.impl.FileBackedTaskManager;
 import ru.yandex.practicum.vilkovam.model.Epic;
 import ru.yandex.practicum.vilkovam.model.Subtask;
 import ru.yandex.practicum.vilkovam.model.Task;
@@ -19,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.TreeSet;
 
 import static java.time.Duration.ofDays;
@@ -28,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static ru.yandex.practicum.vilkovam.model.TaskStatus.NEW;
 
 /**
@@ -73,10 +77,10 @@ class FileBackedPrioritizedTaskManagerTest extends TaskManagerTest {
                 Managers.getDefaultIdGenerator(),
                 Managers.getDefaultHistory());
 
-        final Task savedTask = taskManager.getTaskById(task.getId());
+        Optional<Task> savedTask = taskManager.getTaskById(task.getId());
 
-        assertNotNull(savedTask, "Задача не найдена.");
-        assertEquals(task, savedTask, "Задачи не совпадают.");
+        assertTrue(savedTask.isPresent(), "Задача не найдена.");
+        assertEquals(task, savedTask.get(), "Задачи не совпадают.");
 
         final List<Task> tasks = taskManager.getAllTask();
 
@@ -157,10 +161,10 @@ class FileBackedPrioritizedTaskManagerTest extends TaskManagerTest {
 
         assertNotNull(createdTask, "Задача не создана.");
 
-        final Task savedTask = taskManager.getTaskById(createdTask.getId());
+        Optional<Task> savedTask = taskManager.getTaskById(createdTask.getId());
 
-        assertNotNull(savedTask, "Задача не найдена.");
-        assertEquals(secondTask, savedTask, "Задачи не совпадают.");
+        assertTrue(savedTask.isPresent(), "Задача не найдена.");
+        assertEquals(secondTask, savedTask.get(), "Задачи не совпадают.");
 
         final List<Task> tasks = taskManager.getAllTask();
 
@@ -184,10 +188,10 @@ class FileBackedPrioritizedTaskManagerTest extends TaskManagerTest {
 
         assertNotNull(createdTask, "Задача не создана.");
 
-        final Subtask savedTask = taskManager.getSubtaskById(createdTask.getId());
+        Optional<Subtask> savedTask = taskManager.getSubtaskById(createdTask.getId());
 
-        assertNotNull(savedTask, "Задача не найдена.");
-        assertEquals(subtask, savedTask, "Задачи не совпадают.");
+        assertTrue(savedTask.isPresent(), "Задача не найдена.");
+        assertEquals(subtask, savedTask.get(), "Задачи не совпадают.");
 
         final List<Subtask> tasks = taskManager.getAllSubtask();
 
@@ -209,9 +213,10 @@ class FileBackedPrioritizedTaskManagerTest extends TaskManagerTest {
         taskManager.createSubtask(subtask2);
         taskManager.createSubtask(subtask3);
 
-        Epic epicById = taskManager.getEpicById(epic.getId());
-        LocalDateTime endTime = epicById.getEndTime();
-        Duration duration = epicById.getDuration();
+        Optional<Epic> epicById = taskManager.getEpicById(epic.getId());
+        assertTrue(epicById.isPresent(), "Epic is present");
+        LocalDateTime endTime = epicById.get().getEndTime();
+        Duration duration = epicById.get().getDuration();
 
         LocalDateTime expectedEndTime = subtask3.getEndTime();
         Duration expectedDuration = subtask1.getDuration().plus(subtask2.getDuration()).plus(subtask3.getDuration());
